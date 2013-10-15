@@ -1,10 +1,14 @@
 
+/* CHANGELOG
 
+- Math.random multiplied and rounded to avoid '.' in class name
+- Limit set to -5 by default
+- Server now sends an object instead of an array response
+
+*/
 
 var newMessage = Backbone.Model.extend({
-  url: 'https://api.parse.com/1/classes/chatterbox'
-
-
+  url: 'http://127.0.0.1:8080/classes/messages'
 });
 
 var Message = newMessage.extend({
@@ -14,14 +18,14 @@ var Message = newMessage.extend({
   initialize: function(){
     // makes date readable
     // need to comment out since Date is now epoch time
-    var date = new Date((this.get('createdAt') || "")
-      .replace(/-/g,"/")
-      .replace(/[TZ]/g," "))
-    date = date.getMonth().toString()+'/'
-      +date.getDate().toString()+ ' @ '
-      +date.getHours().toString()+':'
-      +date.getMinutes().toString();
-    this.set('createdAt',date);
+    // var date = new Date((this.get('createdAt') || "")
+    //   .replace(/-/g,"/")
+    //   .replace(/[TZ]/g," "))
+    // date = date.getMonth().toString()+'/'
+    //   +date.getDate().toString()+ ' @ '
+    //   +date.getHours().toString()+':'
+    //   +date.getMinutes().toString();
+    // this.set('createdAt',date);
   },
 
   render : function(){
@@ -33,7 +37,7 @@ var Message = newMessage.extend({
 var AllMessages = Backbone.Collection.extend({
 
   model: Message, // no parens because Message is a class
-  url: 'https://api.parse.com/1/classes/chatterbox',
+  url: 'http://127.0.0.1:8080/classes/messages',
   messagesOnScreen: 15,
 
   initialize: function(){
@@ -46,10 +50,10 @@ var AllMessages = Backbone.Collection.extend({
     var that = this;
     this.fetch({
       // need to comment out unless we can accept limits
-      data: {
-        'order': '-createdAt',
-        'limit': this.messagesOnScreen
-      },
+      // data: {
+      //   'order': '-createdAt',
+      //   'limit': this.messagesOnScreen
+      // },
       success: function(model, data){
       }
     });
@@ -81,7 +85,9 @@ var MessageViewer = Backbone.View.extend({
 
   add: function(e){
     console.log('add');
+
     if(this.addCount < this.collection.messagesOnScreen){
+      console.log(this.collection.get(e).render())
       this.$el.prepend(this.collection.get(e).render());
     } else {
       this.$el.append(this.collection.get(e).render());

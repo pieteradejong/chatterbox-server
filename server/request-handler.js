@@ -52,7 +52,7 @@ exports.handleRequest = function(request, response) {
                 var decodedBody = JSON.parse(fullBody);
 
                 if(decodedBody.username && decodedBody.text) {
-                  log.push({username: decodedBody.username, text: decodedBody.text, roomname: room, createdAt: Date.now(), objectId: Math.random()});
+                  log.push({username: decodedBody.username, text: decodedBody.text, roomname: room, createdAt: (Date.now()).toString(), objectId: Math.round((Math.random()*1000)).toString()});
                   response.writeHead(201, headers);
                   response.end();
 
@@ -65,7 +65,7 @@ exports.handleRequest = function(request, response) {
 
           } else if(req.method === 'GET') {
             response.writeHead(200, headers);
-            response.end(JSON.stringify(log.slice(0)));
+            response.end(JSON.stringify({results:log.slice(-5)}));
 
           } else if (req.method === 'OPTIONS') {
             response.writeHead(200, headers);
