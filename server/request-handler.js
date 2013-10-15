@@ -4,6 +4,9 @@
  * from this file and include it in basic-server.js. Check out the
  * node module documentation at http://nodejs.org/api/modules.html. */
 
+var fs = require("fs");
+var url = require('url');
+
 var querystring = require('querystring');
 
 var defaultCorsHeaders = {
@@ -17,14 +20,44 @@ var defaultCorsHeaders = {
 var log = [];
 
 exports.handleRequest = function(request, response) {
+
+  // fs.readFile('./chatterbox.html','utf8', function (err, html) {
+  //   console.log(html);
+  //   if (err) {
+  //       throw err;
+  //   } else {
+  //     console.log('works');
+  //   }
+  // });
+
   var headers = defaultCorsHeaders;
   var routes = {
     '/': function(req){
       console.log('INDEX REQUESTED');
-      headers['Content-Type'] = "text/plain";
-      response.writeHead("200", headers);
-      response.end("Hello, World!");
-      // return response;// do something
+      console.log(req);
+      if(req.url === "/") {
+        fs.readFile(process.cwd() + '/client/chatterbox.html', 'utf8', function (err, html) {
+          response.writeHeader(200, {"Content-Type": "text/html"});
+          response.write(html);
+          response.end();
+        });
+      } else {
+        fs.readFile(process.cwd() + '/client' + req, 'binary', function (err, data) {
+          if(err) {
+            console.log("error on request");
+            routes['/404-Not-Found']();
+          } else {
+            response.writeHead(200, {"Content-Type": "text/plain"});
+            response.write(data, 'binary');
+            response.end();
+          }
+        });
+      }
+
+      // headers['Content-Type'] = "text/plain";
+      // response.writeHead("200", headers);
+      // response.end("../client/chatterbox.html");
+
     },
     '/classes/messages': function(req, urlObj){
       // TO DO: include createdAt, updatedAt, roomname and objectId
@@ -65,7 +98,7 @@ exports.handleRequest = function(request, response) {
 
           } else if(req.method === 'GET') {
             response.writeHead(200, headers);
-            response.end(JSON.stringify({results:log.slice(-5)}));
+            response.end(JSON.stringify({results:log.slice(-10)}));
 
           } else if (req.method === 'OPTIONS') {
             response.writeHead(200, headers);
@@ -85,18 +118,37 @@ exports.handleRequest = function(request, response) {
       headers['Content-Type'] = "text/plain";
       response.writeHead(405, headers);
       response.end("405 - Method Not Supported!");
+    },
+    '/?': function(req) {
+      headers['Content-Type'] = "text/plain";
+      response.writeHead(200, headers);
+      response.end();
     }
 
   };
-  if(routes[request.url]){
-    routes[request.url](request);
-  } else if (request.url.indexOf("classes/") > -1) {
-      // routes['/classes/messages'](request, request.url.slice(request.url.indexOf("classes/") + 8));
-      routes['/classes/messages'](request, parseUrl(request.url));
-  }
+  console.log('\n\n\n',url.parse(request.url).path);
 
-  else {
-    routes['/404-Not-Found'](request);
+  var pathname = url.parse(request.url).pathname;
+  var fullpath = url.parse(request.url).path;
+  var search = url.parse(request.url).query;
+
+
+  if(fullpath.charAt(1) !== "?") {
+
+    if(routes[request.url]){
+      routes[request.url](request);
+    } else if (request.url.indexOf("classes/") > -1) {
+        // routes['/classes/messages'](request, request.url.slice(request.url.indexOf("classes/") + 8));
+        routes['/classes/messages'](request, parseUrl(request.url));
+    }
+    else if (request.url.slice(-2) === "js") {
+      routes['/'](request.url);
+    }
+    else {
+      routes['/404-Not-Found'](request);
+    }
+  } else {
+    routes[pathname]({url:'/'});
   }
 };
 

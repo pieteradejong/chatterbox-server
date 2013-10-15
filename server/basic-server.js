@@ -70,6 +70,19 @@ var ip = "127.0.0.1";
 /* Use node's http module to create a server and start it listening on
  * the given port and IP. */
 var server = http.createServer(requestListener);
+//console.log(fs.readdirSync(process.cwd() + '/client'));
+// fs.readFile(process.cwd() + '/client/chatterbox.html', 'utf8', function (err, html) {
+//     if (err) {
+//         throw err;
+//     }
+//     http.createServer(function(request, response) {
+//         response.writeHeader(200, {"Content-Type": "text/html"});
+//         response.write(html);
+
+//         response.end();
+//     }).listen(8080,ip);
+// });
+
 console.log("Listening on http://" + ip + ":" + port);
 server.listen(port, ip);
 

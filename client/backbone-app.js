@@ -2,7 +2,7 @@
 /* CHANGELOG
 
 - Math.random multiplied and rounded to avoid '.' in class name
-- Limit set to -5 by default
+- Limit set to 5 by default
 - Server now sends an object instead of an array response
 
 */
@@ -38,7 +38,7 @@ var AllMessages = Backbone.Collection.extend({
 
   model: Message, // no parens because Message is a class
   url: 'http://127.0.0.1:8080/classes/messages',
-  messagesOnScreen: 15,
+  maximumMessagesAllowed: 10,
 
   initialize: function(){
     var that = this;
@@ -52,7 +52,7 @@ var AllMessages = Backbone.Collection.extend({
       // need to comment out unless we can accept limits
       // data: {
       //   'order': '-createdAt',
-      //   'limit': this.messagesOnScreen
+      //   'limit': this.maximumMessagesAllowed
       // },
       success: function(model, data){
       }
@@ -69,7 +69,7 @@ var MessageViewer = Backbone.View.extend({
   initialize: function(){
     this.collection.on('remove',this.remove,this);
     this.collection.on('add',this.add,this);
-    this.addCount = 0;
+    this.countMessages = 0;
     this.roomname = 'lobby';
 
     var that = this;
@@ -86,13 +86,12 @@ var MessageViewer = Backbone.View.extend({
   add: function(e){
     console.log('add');
 
-    if(this.addCount < this.collection.messagesOnScreen){
-      console.log(this.collection.get(e).render())
-      this.$el.prepend(this.collection.get(e).render());
-    } else {
+    // if(this.countMessages < this.collection.maximumMessagesAllowed){
+    //   this.$el.prepend(this.collection.get(e).render());
+    // } else {
       this.$el.append(this.collection.get(e).render());
-    }
-    this.addCount++;
+    // }
+    this.countMessages++;
   },
 
   change: function(e){
